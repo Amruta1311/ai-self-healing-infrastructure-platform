@@ -1,4 +1,3 @@
-# ai_self_healing_infrastructure_platform/llm_rca.py
 import os
 import openai
 
