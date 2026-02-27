@@ -10,6 +10,7 @@ from engine.reasoner import RootCauseAnalyzer
 from engine.healer import RemediationEngine
 from engine.impact import ImpactEstimator
 from engine.memory import IncidentStore
+from engine.llm_rca import handle_incident
 
 
 # Adapters
@@ -56,12 +57,16 @@ if run:
         infra = data["infra"]
 
         anomalies = detector.detect(metrics)
+        print(f'Anomalies : {anomalies}')
 
         diagnosis = rca.analyze(anomalies, infra)
+        print(f'Diagnosis : {diagnosis}')
 
         action = healer.execute(diagnosis)
+        print(f'Action : {action}')
 
         business = impact.estimate(metrics, diagnosis)
+        print(f'Business : {business}')
 
         record = {
             "cause": diagnosis["root_cause"],
@@ -85,6 +90,9 @@ if run:
                 }
 
         store.store_incident(record)
+        # prompt = handle_incident(record, diagnosis, business)
+        # st.json(prompt)
+
 
         col1, col2, col3, col4 = st.columns(4)
 
