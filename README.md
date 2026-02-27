@@ -18,7 +18,7 @@ This project integrates monitoring, incident detection, intelligent reasoning, a
 - **Suggest & apply fixes**
 - **Continuously learn from incidents**
 
-This platform is ideal for SRE teams, DevOps engineers, and AI infrastructure researchers who want to build smarter, more resilient systems. :contentReference[oaicite:2]{index=2}
+This platform is ideal for SRE teams, DevOps engineers, and AI infrastructure researchers who want to build smarter, more resilient systems.
 
 ---
 
