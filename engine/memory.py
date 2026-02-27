@@ -7,22 +7,38 @@ cur.execute("""
 CREATE TABLE IF NOT EXISTS incidents (
     id INTEGER PRIMARY KEY,
     cause TEXT,
-    fix TEXT,
     confidence REAL,
+    action TEXT,
+    sla REAL,
+    loss REAL,
     timestamp REAL
 )
 """)
 conn.commit()
 
 
-def store_incident(cause, fix, confidence, ts):
-    cur.execute(
-        "INSERT INTO incidents VALUES (NULL,?,?,?,?)",
-        (cause, fix, confidence, ts)
-    )
+def store(record):
+
+    cur.execute("""
+    INSERT INTO incidents VALUES
+    (NULL,?,?,?,?,?,?)
+    """, (
+        record["cause"],
+        record["confidence"],
+        record["action"],
+        record["sla"],
+        record["loss"],
+        record["ts"]
+    ))
+
     conn.commit()
 
 
-def fetch_history():
-    cur.execute("SELECT * FROM incidents ORDER BY id DESC LIMIT 20")
+def history(limit=25):
+
+    cur.execute("""
+    SELECT * FROM incidents
+    ORDER BY id DESC LIMIT ?
+    """, (limit,))
+
     return cur.fetchall()

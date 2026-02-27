@@ -1,65 +1,84 @@
 import streamlit as st
 import time
 
-from engine.monitor import generate_metrics, generate_logs
-from engine.detector import detect_anomaly
-from engine.reasoner import reason
-from engine.healer import apply_fix
-from engine.memory import store_incident, fetch_history
+from engine.k8s_client import KubernetesAdapter
+from engine.prom_adapter import PrometheusAdapter
+from engine.telemetry import TelemetryEngine
+from engine.detector import AnomalyDetector
+from engine.reasoner import RootCauseAnalyzer
+from engine.healer import RemediationEngine
+from engine.impact import ImpactEstimator
+from engine.memory import store, history
 
 
-st.set_page_config("Self-Healing AI Infra", layout="wide")
+# Adapters
+k8s = KubernetesAdapter()
+prom = PrometheusAdapter()
 
-st.title("🤖 Autonomous Self-Healing Infrastructure Platform")
+telemetry = TelemetryEngine(k8s, prom)
+detector = AnomalyDetector()
+rca = RootCauseAnalyzer()
+healer = RemediationEngine()
+impact = ImpactEstimator()
 
-run = st.toggle("▶️ Start System")
 
+st.set_page_config("AI Ops Platform", layout="wide")
 
-col1, col2, col3 = st.columns(3)
+st.title("🤖 Autonomous Self-Healing AI Platform")
 
-log_box = st.empty()
-decision_box = st.empty()
-history_box = st.empty()
+st.caption("Kubernetes + Prometheus Integrated")
+
+run = st.toggle("▶️ Start Platform")
 
 
 if run:
 
     while True:
 
-        metrics = generate_metrics()
-        logs = generate_logs(metrics)
+        data = telemetry.collect()
 
-        anomalies = detect_anomaly(metrics)
+        metrics = data["metrics"]
+        infra = data["infra"]
 
-        reasoning = reason(anomalies, logs)
+        anomalies = detector.detect(metrics)
 
-        fix_result = apply_fix(reasoning["fix"])
+        diagnosis = rca.analyze(anomalies, infra)
 
-        store_incident(
-            reasoning["cause"],
-            reasoning["fix"],
-            reasoning["confidence"],
-            metrics["timestamp"]
-        )
+        action = healer.execute(diagnosis)
 
-        # UI Updates
+        business = impact.estimate(metrics, diagnosis)
+
+        record = {
+            "cause": diagnosis["root_cause"],
+            "confidence": diagnosis["confidence"],
+            "action": action,
+            "sla": business["sla"],
+            "loss": business["estimated_loss_usd"],
+            "ts": time.time()
+        }
+
+        store(record)
+
+        col1, col2, col3, col4 = st.columns(4)
+
         with col1:
-            st.subheader("📊 Metrics")
+            st.subheader("📊 Prometheus Metrics")
             st.json(metrics)
 
         with col2:
-            st.subheader("📜 Logs")
-            for l in logs:
-                st.write(l)
+            st.subheader("☸️ Kubernetes Health")
+            st.json(infra)
 
         with col3:
-            st.subheader("🧠 AI Diagnosis")
-            st.json(reasoning)
-            st.success(fix_result)
+            st.subheader("🧠 Diagnosis")
+            st.json(diagnosis)
+            st.success(action)
 
-        history = fetch_history()
+        with col4:
+            st.subheader("💼 Business Impact")
+            st.json(business)
 
-        history_box.subheader("📚 Incident Memory")
-        history_box.table(history)
+        st.subheader("📚 Incident Intelligence")
+        st.table(history())
 
         time.sleep(3)
