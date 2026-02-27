@@ -15,6 +15,9 @@ An autonomous AI system that monitors, diagnoses, and resolves production failur
 
 Streamlit + Modular AI Ops Engine
 
+## Live Demo
+https://ai-self-healing-infrastructure-platform.streamlit.app/
+
 
 ## Impact
 
